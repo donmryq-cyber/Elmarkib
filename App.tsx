@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, User, Users, DollarSign, LogIn, ChevronLeft, PlusCircle, Search, FileText, Settings, Home, BarChart2, UserPlus, ArrowUpRight, Phone, MapPin, CheckCircle, MoreVertical, LogOut, Info, X, TrendingUp, TrendingDown, ChevronRight } from 'lucide-react';
-import { addPatient, getPatients, updatePatient, deletePatient, addService, getServices, updateService, deleteService, addAppointment, getAppointments, updateAppointmentStatus } from './services/firebaseService';
+import { addPatient, getPatients, updatePatient, deletePatient, addService, getServices, updateService, deleteService, addAppointment, getAppointments, updateAppointmentStatus, loginUser, logoutUser, onAuthStateChange } from './services/firebaseService';
 import { Patient, Service, Appointment } from './types';
 
 // --- Initial Data Setup ---
@@ -237,8 +237,27 @@ const AppointmentScheduler = ({ selectedDate, setSelectedDate, selectedTime, set
 // --- Screen Components ---
 
 const LoginScreen = ({ onLogin }) => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!email || !password) return;
+    
+    setLoading(true);
+    setError('');
+    
+    try {
+      await loginUser(email, password);
+      onLogin();
+    } catch (error) {
+      setError('بيانات تسجيل الدخول غير صحيحة');
+    } finally {
+      setLoading(false);
+    }
+  };
   
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center p-4">
@@ -247,11 +266,16 @@ const LoginScreen = ({ onLogin }) => {
           <h1 className="text-3xl font-bold text-indigo-700">Elmarkeb Clinic</h1>
           <p className="mt-2 text-slate-600">أهلاً بك! الرجاء تسجيل الدخول للمتابعة.</p>
         </div>
-        <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); onLogin(); }}>
-          <Input id="username" label="اسم المستخدم" placeholder="ادخل اسم المستخدم" icon={<User />} value={username} onChange={(e) => setUsername(e.target.value)} />
+        <form className="space-y-6" onSubmit={handleSubmit}>
+          <Input id="email" label="البريد الإلكتروني" type="email" placeholder="ادخل البريد الإلكتروني" icon={<User />} value={email} onChange={(e) => setEmail(e.target.value)} />
           <Input id="password" label="كلمة المرور" type="password" placeholder="ادخل كلمة المرور" icon={<LogIn />} value={password} onChange={(e) => setPassword(e.target.value)} />
-          <Button type="submit" variant="primary" className="w-full !py-3">
-            تسجيل الدخول
+          {error && (
+            <div className="text-red-600 text-sm text-center bg-red-50 p-3 rounded-lg">
+              {error}
+            </div>
+          )}
+          <Button type="submit" variant="primary" className="w-full !py-3" disabled={loading}>
+            {loading ? 'جاري تسجيل الدخول...' : 'تسجيل الدخول'}
           </Button>
         </form>
       </div>
@@ -1179,7 +1203,7 @@ const AppointmentModal = ({ isOpen, onClose, services, patients, onAppointmentAd
 
 // --- Main App Component ---
 const App = () => {
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [user, setUser] = useState(null);
     const [currentPage, setCurrentPage] = useState('dashboard');
     const [pageData, setPageData] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -1191,7 +1215,17 @@ const App = () => {
 
     useEffect(() => {
         document.documentElement.dir = 'rtl';
-        loadData();
+        
+        const unsubscribe = onAuthStateChange((user) => {
+            setUser(user);
+            if (user) {
+                loadData();
+            } else {
+                setLoading(false);
+            }
+        });
+        
+        return () => unsubscribe();
     }, []);
     
     const loadData = async () => {
@@ -1227,8 +1261,15 @@ const App = () => {
     };
 
     const handleLogin = () => {
-        setIsLoggedIn(true);
-        setCurrentPage('dashboard');
+        // Login is handled by Firebase Auth state change
+    };
+    
+    const handleLogout = async () => {
+        try {
+            await logoutUser();
+        } catch (error) {
+            console.error('Error logging out:', error);
+        }
     };
 
     const handleNavigate = (page, data = null) => {
@@ -1268,7 +1309,7 @@ const App = () => {
         }
     };
 
-    if (!isLoggedIn) {
+    if (!user) {
         return <LoginScreen onLogin={handleLogin} />;
     }
 
@@ -1340,7 +1381,7 @@ const App = () => {
                             <p className="font-semibold text-white">د. أحمد المركب</p>
                             <p className="text-xs text-slate-400">طبيب عام</p>
                         </div>
-                        <button className="mr-auto text-slate-400 hover:text-white"><LogOut className="w-5 h-5"/></button>
+                        <button onClick={handleLogout} className="mr-auto text-slate-400 hover:text-white"><LogOut className="w-5 h-5"/></button>
                     </div>
                 </div>
             </aside>

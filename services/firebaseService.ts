@@ -9,8 +9,28 @@ import {
   where,
   Timestamp 
 } from "firebase/firestore";
-import { db } from "../firebase";
+import { 
+  signInWithEmailAndPassword, 
+  signOut, 
+  onAuthStateChanged,
+  User
+} from "firebase/auth";
+import { db, auth } from "../firebase";
 import { Patient, Service, Appointment } from "../types";
+
+// Authentication
+export const loginUser = async (email: string, password: string) => {
+  const userCredential = await signInWithEmailAndPassword(auth, email, password);
+  return userCredential.user;
+};
+
+export const logoutUser = async () => {
+  await signOut(auth);
+};
+
+export const onAuthStateChange = (callback: (user: User | null) => void) => {
+  return onAuthStateChanged(auth, callback);
+};
 
 // Patients
 export const addPatient = async (patient: Omit<Patient, 'id'>) => {
