@@ -297,10 +297,10 @@ const Dashboard = ({ onNavigate, onAddAppointment, patients, appointments, onApp
     }
     
     return (
-        <div className="p-8 space-y-8">
-            <h1 className="text-3xl font-bold text-slate-800">أهلاً بعودتك يا دكتور!</h1>
+        <div className="p-4 lg:p-8 space-y-6 lg:space-y-8">
+            <h1 className="text-2xl lg:text-3xl font-bold text-slate-800">أهلاً بعودتك يا دكتور!</h1>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6">
                 <StatCard title="مواعيد اليوم" value={todaysAppointments.length} icon={<Calendar />} colorName="indigo" />
                 <StatCard title="إجمالي المرضى" value={patients.length} icon={<Users />} colorName="emerald" />
                 <StatCard title="مرضى جدد (الأسبوع)" value="3" icon={<UserPlus />} colorName="sky" />
@@ -310,9 +310,9 @@ const Dashboard = ({ onNavigate, onAddAppointment, patients, appointments, onApp
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2">
                     <Card>
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-xl font-bold text-slate-800">مواعيد اليوم القادمة</h2>
-                            <div className="w-64">
+                        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-4 gap-4">
+                            <h2 className="text-lg lg:text-xl font-bold text-slate-800">مواعيد اليوم القادمة</h2>
+                            <div className="w-full lg:w-64">
                                 <Input 
                                     id="searchTodayAppointment"
                                     placeholder="ابحث بالاسم أو رقم الهاتف..."
@@ -421,21 +421,22 @@ const AppointmentsPage = ({ onAddAppointment, appointments, onAppointmentUpdate,
     });
     
     return (
-        <div className="p-8 h-full flex flex-col">
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold text-slate-800">جدول المواعيد</h1>
-                <div className="flex items-center gap-2">
+        <div className="p-4 lg:p-8 h-full flex flex-col">
+            <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-6 gap-4">
+                <h1 className="text-2xl lg:text-3xl font-bold text-slate-800">جدول المواعيد</h1>
+                <div className="flex flex-wrap items-center gap-2">
                      <Button onClick={goToPrevWeek} variant="secondary" className="p-2.5"><ChevronLeft className="h-5 w-5" /></Button>
-                     <Button onClick={goToToday} variant="secondary">هذا الأسبوع</Button>
+                     <Button onClick={goToToday} variant="secondary" className="text-sm lg:text-base">هذا الأسبوع</Button>
                      <Button onClick={goToNextWeek} variant="secondary" className="p-2.5"><ChevronRight className="h-5 w-5" /></Button>
-                     <div className="w-px h-6 bg-slate-300 mx-2"></div>
-                     <Button onClick={onAddAppointment} variant="primary">
+                     <div className="w-px h-6 bg-slate-300 mx-2 hidden lg:block"></div>
+                     <Button onClick={onAddAppointment} variant="primary" className="w-full lg:w-auto">
                          <PlusCircle className="h-5 w-5" />
-                         <span>إضافة موعد</span>
+                         <span className="hidden sm:inline">إضافة موعد</span>
+                         <span className="sm:hidden">إضافة</span>
                      </Button>
                 </div>
             </div>
-            <div className="mb-4 max-w-md">
+            <div className="mb-4">
                 <Input 
                     id="searchAppointment"
                     placeholder="ابحث بالاسم أو رقم الهاتف..."
@@ -445,60 +446,62 @@ const AppointmentsPage = ({ onAddAppointment, appointments, onAppointmentUpdate,
                 />
             </div>
             
-            <div className="flex-1 grid grid-cols-7 grid-rows-[auto_1fr] border border-slate-200 rounded-xl bg-white overflow-hidden shadow-sm">
-                {week.map(day => (
-                    <div key={day.toISOString()} className="p-3 text-center font-bold text-slate-700 border-b border-slate-200 border-l border-l-slate-200 first:border-l-0">
-                        <span className="text-sm text-slate-500">{day.toLocaleDateString('ar-EG', { weekday: 'short' })}</span>
-                        <p className="text-2xl mt-1">{day.getDate()}</p>
-                    </div>
-                ))}
+            <div className="flex-1 overflow-x-auto">
+                <div className="min-w-[800px] lg:min-w-0 grid grid-cols-7 grid-rows-[auto_1fr] border border-slate-200 rounded-xl bg-white overflow-hidden shadow-sm h-full">
+                    {week.map(day => (
+                        <div key={day.toISOString()} className="p-2 lg:p-3 text-center font-bold text-slate-700 border-b border-slate-200 border-l border-l-slate-200 first:border-l-0">
+                            <span className="text-xs lg:text-sm text-slate-500">{day.toLocaleDateString('ar-EG', { weekday: 'short' })}</span>
+                            <p className="text-lg lg:text-2xl mt-1">{day.getDate()}</p>
+                        </div>
+                    ))}
                 
-                {week.map((day) => {
-                    const isToday = day.toDateString() === new Date().toDateString();
-                    const dateKey = day.toISOString().split('T')[0];
-                    const appointmentsForDay = filteredAppointments.filter(apt => 
-                        apt.dateTime.split('T')[0] === dateKey
-                    );
+                    {week.map((day) => {
+                        const isToday = day.toDateString() === new Date().toDateString();
+                        const dateKey = day.toISOString().split('T')[0];
+                        const appointmentsForDay = filteredAppointments.filter(apt => 
+                            apt.dateTime.split('T')[0] === dateKey
+                        );
 
-                    return (
-                        <div key={day.toISOString()} className={`p-2 space-y-2 relative border-l border-l-slate-200 first:border-l-0 ${isToday ? 'bg-indigo-50' : 'bg-white'} transition-colors`}>
-                            <div className="h-full overflow-y-auto">
-                                {appointmentsForDay
-                                    .sort((a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime())
-                                    .map((apt, idx) => {
-                                    const aptTime = new Date(apt.dateTime).toLocaleTimeString('ar-EG', { hour: 'numeric', minute: 'numeric', hour12: true });
-                                    return (
-                                    <div key={idx} className="bg-indigo-100 border-l-4 border-indigo-500 text-indigo-800 rounded-md p-2 cursor-pointer hover:bg-indigo-200 transition-colors shadow-sm relative">
-                                        <div className="absolute top-1 left-1 bg-indigo-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-                                            {idx + 1}
-                                        </div>
-                                        <div className="flex items-start gap-2">
-                                            <input 
-                                                type="checkbox" 
-                                                className="mt-1 rounded border-indigo-300 text-indigo-600 focus:ring-indigo-500" 
-                                                checked={apt.completed || false}
-                                                onChange={async (e) => {
-                                                    try {
-                                                        await updateAppointmentStatus(apt.id, e.target.checked);
-                                                        onAppointmentUpdate();
-                                                    } catch (error) {
-                                                        console.error('Error updating appointment:', error);
-                                                    }
-                                                }}
-                                            />
-                                            <div className="flex-1">
-                                                <p className="font-bold text-sm truncate">{apt.patientName}</p>
-                                                <p className="text-xs truncate">{apt.reason}</p>
-                                                <p className="text-indigo-600 font-semibold text-xs mt-1">{aptTime}</p>
+                        return (
+                            <div key={day.toISOString()} className={`p-1 lg:p-2 space-y-1 lg:space-y-2 relative border-l border-l-slate-200 first:border-l-0 ${isToday ? 'bg-indigo-50' : 'bg-white'} transition-colors`}>
+                                <div className="h-full overflow-y-auto">
+                                    {appointmentsForDay
+                                        .sort((a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime())
+                                        .map((apt, idx) => {
+                                        const aptTime = new Date(apt.dateTime).toLocaleTimeString('ar-EG', { hour: 'numeric', minute: 'numeric', hour12: true });
+                                        return (
+                                        <div key={idx} className="bg-indigo-100 border-l-4 border-indigo-500 text-indigo-800 rounded-md p-1.5 lg:p-2 cursor-pointer hover:bg-indigo-200 transition-colors shadow-sm relative">
+                                            <div className="absolute top-1 left-1 bg-indigo-600 text-white text-xs rounded-full w-4 h-4 lg:w-5 lg:h-5 flex items-center justify-center font-bold text-[10px] lg:text-xs">
+                                                {idx + 1}
+                                            </div>
+                                            <div className="flex items-start gap-1 lg:gap-2">
+                                                <input 
+                                                    type="checkbox" 
+                                                    className="mt-1 rounded border-indigo-300 text-indigo-600 focus:ring-indigo-500 w-3 h-3 lg:w-4 lg:h-4" 
+                                                    checked={apt.completed || false}
+                                                    onChange={async (e) => {
+                                                        try {
+                                                            await updateAppointmentStatus(apt.id, e.target.checked);
+                                                            onAppointmentUpdate();
+                                                        } catch (error) {
+                                                            console.error('Error updating appointment:', error);
+                                                        }
+                                                    }}
+                                                />
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="font-bold text-xs lg:text-sm truncate">{apt.patientName}</p>
+                                                    <p className="text-[10px] lg:text-xs truncate">{apt.reason}</p>
+                                                    <p className="text-indigo-600 font-semibold text-[10px] lg:text-xs mt-1">{aptTime}</p>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                );
-                                })}
+                                    );
+                                    })}
+                                </div>
                             </div>
-                        </div>
-                    );
-                })}
+                        );
+                    })}
+                </div>
             </div>
         </div>
     );
@@ -540,8 +543,8 @@ const PatientManagementPage = ({ onNavigate, patients, onPatientUpdate }) => {
     };
 
     return (
-        <div className="p-8 space-y-6">
-            <h1 className="text-3xl font-bold text-slate-800">إدارة المرضى</h1>
+        <div className="p-4 lg:p-8 space-y-6">
+            <h1 className="text-2xl lg:text-3xl font-bold text-slate-800">إدارة المرضى</h1>
             <Card>
                 <div className="mb-4">
                     <Input 
@@ -587,17 +590,17 @@ const PatientManagementPage = ({ onNavigate, patients, onPatientUpdate }) => {
                                         ) : patient.phone}
                                     </td>
                                     <td className="px-5 py-4 text-sm text-slate-700">{new Date(patient.registrationDate).toLocaleDateString('ar-EG')}</td>
-                                    <td className="px-5 py-4 flex gap-2">
+                                    <td className="px-2 lg:px-5 py-4 flex flex-col lg:flex-row gap-1 lg:gap-2">
                                         {editingPatient === patient.id ? (
                                             <>
-                                                <Button onClick={() => handleSave(patient.id)} variant="success" className="!px-3 !py-1.5 text-sm">حفظ</Button>
-                                                <Button onClick={() => setEditingPatient(null)} variant="secondary" className="!px-3 !py-1.5 text-sm">إلغاء</Button>
+                                                <Button onClick={() => handleSave(patient.id)} variant="success" className="!px-2 lg:!px-3 !py-1 lg:!py-1.5 text-xs lg:text-sm">حفظ</Button>
+                                                <Button onClick={() => setEditingPatient(null)} variant="secondary" className="!px-2 lg:!px-3 !py-1 lg:!py-1.5 text-xs lg:text-sm">إلغاء</Button>
                                             </>
                                         ) : (
                                             <>
-                                                <Button onClick={() => onNavigate('patientProfile', patient)} variant="secondary" className="!px-3 !py-1.5 text-sm">عرض</Button>
-                                                <Button onClick={() => handleEdit(patient)} variant="secondary" className="!px-3 !py-1.5 text-sm">تعديل</Button>
-                                                <Button onClick={() => handleDelete(patient.id)} variant="danger" className="!px-3 !py-1.5 text-sm">حذف</Button>
+                                                <Button onClick={() => onNavigate('patientProfile', patient)} variant="secondary" className="!px-2 lg:!px-3 !py-1 lg:!py-1.5 text-xs lg:text-sm">عرض</Button>
+                                                <Button onClick={() => handleEdit(patient)} variant="secondary" className="!px-2 lg:!px-3 !py-1 lg:!py-1.5 text-xs lg:text-sm">تعديل</Button>
+                                                <Button onClick={() => handleDelete(patient.id)} variant="danger" className="!px-2 lg:!px-3 !py-1 lg:!py-1.5 text-xs lg:text-sm">حذف</Button>
                                             </>
                                         )}
                                     </td>
@@ -1180,6 +1183,7 @@ const App = () => {
     const [currentPage, setCurrentPage] = useState('dashboard');
     const [pageData, setPageData] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
     const [patients, setPatients] = useState<Patient[]>([]);
     const [services, setServices] = useState<Service[]>([]);
     const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -1273,7 +1277,11 @@ const App = () => {
         return (
             <a
                 href="#"
-                onClick={(e) => { e.preventDefault(); handleNavigate(page); }}
+                onClick={(e) => { 
+                    e.preventDefault(); 
+                    handleNavigate(page);
+                    if (window.innerWidth < 1024) setSidebarOpen(false);
+                }}
                 className={`flex items-center gap-3 p-3 rounded-lg transition-colors relative ${isActive ? 'bg-indigo-600 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
             >
                 {icon}
@@ -1293,9 +1301,30 @@ const App = () => {
                 onAppointmentAdd={loadData}
                 appointments={appointments}
             />
-            <aside className="w-64 bg-slate-800 text-white flex flex-col p-4">
-                <div className="text-center my-4">
-                    <h1 className="text-2xl font-bold text-white">Elmarkeb Clinic</h1>
+            
+            {/* Mobile overlay */}
+            {sidebarOpen && (
+                <div 
+                    className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden" 
+                    onClick={() => setSidebarOpen(false)}
+                />
+            )}
+            
+            {/* Sidebar */}
+            <aside className={`
+                fixed lg:static inset-y-0 right-0 z-50
+                w-64 bg-slate-800 text-white flex flex-col p-4
+                transform transition-transform duration-300 ease-in-out
+                ${sidebarOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}
+            `}>
+                <div className="flex items-center justify-between my-4">
+                    <h1 className="text-xl lg:text-2xl font-bold text-white">Elmarkeb Clinic</h1>
+                    <button 
+                        onClick={() => setSidebarOpen(false)}
+                        className="lg:hidden p-2 hover:bg-slate-700 rounded-lg transition-colors"
+                    >
+                        <X className="h-5 w-5" />
+                    </button>
                 </div>
                 <nav className="flex-grow space-y-2 mt-8">
                     <NavLink icon={<Home className="w-5 h-5"/>} label="الرئيسية" page="dashboard" />
@@ -1315,8 +1344,23 @@ const App = () => {
                     </div>
                 </div>
             </aside>
-            <main className="flex-1 overflow-y-auto">
-                {renderPage()}
+            
+            <main className="flex-1 flex flex-col overflow-hidden">
+                {/* Mobile header */}
+                <div className="lg:hidden bg-white shadow-sm border-b border-gray-200 px-4 py-3">
+                    <button
+                        onClick={() => setSidebarOpen(true)}
+                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                        <svg className="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+                
+                <div className="flex-1 overflow-y-auto">
+                    {renderPage()}
+                </div>
             </main>
         </div>
     );
